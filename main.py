@@ -1,19 +1,38 @@
 import requests
 from bs4 import BeautifulSoup
-from requests.api import request
+
 import re
 import os
+import json
 
 URL = 'https://stihi.ru'
+PATH = 'D:/stihi'
 
     
+def getData(path):
+    with open(path, 'r+') as file:
+        data = json.loads(file.read())
+        file.close
+        return data
 
-def poem(url):
+def setData(path, data):
+    with open(path, 'w+') as file:
+        json.dump(data, file)
+        file.close
+        return True
 
+def poem(url, author):
+    data = []
+    if os.path.exists('{0}/{1}/db.json'.format(PATH, author)):
+        data = getData('{0}/{1}/db.json'.format(PATH, author))
+    if url in data:
+        pass
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'lxml')
     poem_name = soup.find('h1')
     poem = soup.find('div', class_='text')
+    data.append(url)
+    setData('{0}/{1}/db.json'.format(PATH, author), data)
     return (poem_name.text,poem.text)
 
 def book(url, bookLink, page = 0, poemLinks = {}):
@@ -61,10 +80,6 @@ def authorPage(url, page = 0, poemLinks = {}):
         poemLinks = authorPage(url, page + 50, poemLinks)
 
     return poemLinks
-    
-
-    
-PATH = 'D:/stihi'
 
 
 authorpg = author('https://stihi.ru/avtor/budarin')
@@ -72,7 +87,7 @@ if not os.path.exists('{0}/{1}'.format(PATH, authorpg[0])):
     os.mkdir('{0}/{1}'.format(PATH, authorpg[0]))
 
 for name in authorpg[1]:
-    pm = poem(URL + authorpg[1][name])
+    pm = poem(URL + authorpg[1][name], authorpg[0])
     file = open('{0}/{1}/'.format(PATH, authorpg[0]) +re.sub('[/|\:*?<>]','',pm[0]) + '.txt', 'w', encoding='UTF-8')
     file.write(pm[1])
     file.close()
