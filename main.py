@@ -8,19 +8,22 @@ import json
 URL = 'https://stihi.ru'
 PATH = 'D:/stihi'
 
-    
+#Достать данные из json лога
 def getData(path):
     with open(path, 'r+') as file:
         data = json.loads(file.read())
-        file.close
+        file.close()
         return data
 
+#Закинуть данные в json лог
 def setData(path, data):
     with open(path, 'w+') as file:
         json.dump(data, file)
-        file.close
+        file.close()
         return True
 
+#Парсер страницы стиха
+#Возвращает название стиха и его текст
 def poem(url, author):
     data = []
     if os.path.exists('{0}/{1}/db.json'.format(PATH, author)):
@@ -35,6 +38,8 @@ def poem(url, author):
     setData('{0}/{1}/db.json'.format(PATH, author), data)
     return (poem_name.text,poem.text)
 
+#Парсер книги на странице автора, по большей части работает
+#как и парсер страницы автора, но все отличие в том как формируется ссылка
 def book(url, bookLink, page = 0, poemLinks = {}):
 
     response = requests.get(url + '&s={0}'.format(page) + '&{0}'.format(bookLink))
@@ -51,6 +56,7 @@ def book(url, bookLink, page = 0, poemLinks = {}):
 
     return poemLinks
 
+#Собирает сслыки на все стихи воедино
 def author(url, page = 0):
 
     poems = authorPage(url)
@@ -65,7 +71,7 @@ def author(url, page = 0):
     return (authorName, poems)
         
     
-
+#Парсит все страницы автора, и собирает ссылки на стихи, не считая книги
 def authorPage(url, page = 0, poemLinks = {}):
 
     response = requests.get(url + '&s={0}'.format(page))
@@ -82,7 +88,7 @@ def authorPage(url, page = 0, poemLinks = {}):
     return poemLinks
 
 
-authorpg = author('https://stihi.ru/avtor/budarin')
+authorpg = author(input('Ссылка на автора: '))
 if not os.path.exists('{0}/{1}'.format(PATH, authorpg[0])):
     os.mkdir('{0}/{1}'.format(PATH, authorpg[0]))
 
